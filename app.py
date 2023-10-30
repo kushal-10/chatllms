@@ -19,7 +19,7 @@ def user(user_message, history):
 def respond(message, chat_history):
     question = str(message)
     chain = openai_chain(inp_dir=dir)
-    output = chain.get_response(query=question, k=3, type="stuff")
+    output = chain.get_response(query=question, k=10, type="map_reduce")
 
     splits = dir.split("/")
     pdf_dir = "data_" + splits[0] + "/data_" + splits[1]

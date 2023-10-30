@@ -23,7 +23,7 @@ for dir in list_dir:
     
     print('Getting reponse for ' + str(dir))
     query = 'What does this report talk about? Please explain in detail.'
-    response = chain.get_response(query, k=10, type='stuff') # 'map_reduce' / 'stuff'
+    response = chain.get_response(query, k=3, type='stuff') # 'map_reduce' / 'stuff'
     comb_response += str(response)
 
 # Split the texts 
