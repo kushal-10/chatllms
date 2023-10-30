@@ -1,6 +1,7 @@
 # Application file for Gradio App for OpenAI Model
 
-dir = 'output_reports/reports_1/faiss_index'
+#options - 'output_reports/reports_n/faiss_index' - n=1..9 OR 'combined/faiss_index'
+dir = 'combined/faiss_index'
 
 demo_query = "What important topics are discussed in this report?"
 
@@ -18,7 +19,7 @@ def user(user_message, history):
 def respond(message, chat_history):
     question = str(message)
     chain = openai_chain(inp_dir=dir)
-    output = chain.get_response(query=question)
+    output = chain.get_response(query=question, k=20)
 
     splits = dir.split("/")
     pdf_dir = "data_" + splits[0] + "/data_" + splits[1]
@@ -30,7 +31,7 @@ def respond(message, chat_history):
     }
     data_df = pd.DataFrame(store_data, index=[0])
     data_df.to_csv("csvs/" + splits[1] + ".csv")
-    
+
     bot_message = output
     chat_history.append((message, bot_message))
     time.sleep(2)

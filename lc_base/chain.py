@@ -23,7 +23,9 @@ class openai_chain():
         docs = db.similarity_search(query, k=k)
 
         # Create Chain
-        chain = load_qa_chain(ChatOpenAI(), chain_type="map_reduce")
+        chain = load_qa_chain(ChatOpenAI(model="gpt-3.5-turbo"), chain_type="map_reduce")
+        # chain = load_qa_chain(ChatOpenAI(model="gpt-3.5-turbo"), chain_type="stuff")
+
 
         # Get Response
         response = chain.run(input_documents=docs, question=query)
@@ -32,4 +34,21 @@ class openai_chain():
 
 
         
+"""
+TODO 
 
+1) Map_Reduce - 7 mins just to process a 27 page report
+1.5) Map_reduce on smaller reports - 
+2) Stuff - 30 secs to process and give the output
+
+Check condition? <4K use #stuff else use #Map_reduce
+
+Potential  Errors
+
+Explain the key points of this report in detail.
+
+I'm sorry, but I can't provide a detailed explanation of the key points of the report as the relevant portion of the document you provided does not contain any specific information about the report or its key points. It mainly talks about the services provided by Boston Consulting Group (BCG) and how they aim to help clients and make a positive impact in the world. If you have access to the full report, please provide more specific information or context, and I'll be happy to assist you further.
+
+Preprocess data - remove \ns  or blank spaces
+
+"""

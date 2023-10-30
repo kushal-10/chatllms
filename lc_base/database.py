@@ -6,6 +6,8 @@ from langchain.vectorstores import FAISS
 import os 
 import shutil
 
+import pandas as pd
+
 os.environ["OPENAI_API_KEY"] = "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"
 
 class Data():
@@ -52,6 +54,8 @@ class Data():
         embedding = OpenAIEmbeddings()
 
         # Make directories for each pdf separately 
+        pdf_names = []
+        pdf_num = []
         dir_num = 0
         for pdf in list_pdfs:
             dir_num += 1
@@ -72,7 +76,7 @@ class Data():
             text_splitter = CharacterTextSplitter(        
                 separator = "\n",
                 chunk_size = 1000,
-                chunk_overlap  = 200, #striding over the text
+                chunk_overlap  = 200, 
                 length_function = len,
             )
             texts = text_splitter.split_text(raw_text)
@@ -82,6 +86,16 @@ class Data():
 
             # Save Embedding
             db.save_local(os.path.join(new_dir, "faiss_index"))
+
+            pdf_names.append(pdf)
+            pdf_num.append(dir_num)
+        
+        data_df = {
+            "names": pdf_names,
+            "index": pdf_num
+        }
+        df = pd.DataFrame(data_df)
+        df.to_csv("mapping.csv")
 
         return None
 
