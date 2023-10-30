@@ -1,2 +1,2 @@
 ,query,paper,response
-0, Are there only 4 papers or 6?,data_paper_combined/data_faiss_index,"The document mentions that there are several academic articles related to transportation, logistics, and supply chain management, but it does not specify the exact number of papers. It only provides a brief overview of the topics covered in the paper and references the relevance of previous studies in the fields of infectious disease management and government regulation. Therefore, it is unclear whether there are only four or six papers mentioned in the document."
+0, What are the methodologies used in these papers?,data_paper_combined/data_faiss_index,The provided portion of the document does not mention the specific methodologies used in the papers.
