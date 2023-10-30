@@ -64,4 +64,9 @@ Use two modes -> summarizer wholedoc + chat top3doc
 compare summarizing answers by stuff and map_reduce
 
 use top6 across the paper -> 500 each
+top 40 -> 100 each
+
+Take consulting reports -> find top 10 challenges
+Take government reports from eu, china, india -> ask questions about the challenges based on countries
+Why EU is agging behind in AI? and so on..
 """
