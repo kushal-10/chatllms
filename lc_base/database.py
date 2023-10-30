@@ -57,6 +57,7 @@ class Data():
         pdf_names = []
         pdf_num = []
         dir_num = 0
+        text_count = 0
         for pdf in list_pdfs:
             dir_num += 1
             new_dir = os.path.join(self.out_dir, self.data_dir + '_' + str(dir_num))
@@ -80,7 +81,8 @@ class Data():
                 length_function = len,
             )
             texts = text_splitter.split_text(raw_text)
-
+            text_count += len(raw_text)
+            print('Length of text: ' + str(len(raw_text)))
             # Create Embedding
             db = FAISS.from_texts(texts, embedding)
 
@@ -96,6 +98,7 @@ class Data():
         }
         df = pd.DataFrame(data_df)
         df.to_csv("mapping.csv")
+        print('Total text in data: ' + str(text_count))
 
         return None
 

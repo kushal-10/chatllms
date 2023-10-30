@@ -6,7 +6,7 @@ from langchain.vectorstores import FAISS
 
 os.environ["OPENAI_API_KEY"] = "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"
 
-folder = 'csvs'
+folder = 'paper_csvs'
 
 list_dirs = os.listdir(folder)
 
@@ -17,7 +17,8 @@ for i in range(len(list_dirs)):
     result += str(df['response'].iloc[0])
 
 print(len(result))
-#21000 words
+#21000 words - consultation reports
+#12988 words - academic papers
 
 # Split the texts 
 text_splitter = CharacterTextSplitter(        
@@ -33,4 +34,4 @@ embedding = OpenAIEmbeddings()
 db = FAISS.from_texts(texts, embedding)
 
 # Save Embedding
-db.save_local("combined/faiss_index")
+db.save_local("paper_combined/faiss_index")

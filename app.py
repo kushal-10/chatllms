@@ -1,7 +1,7 @@
 # Application file for Gradio App for OpenAI Model
 
 #options - 'output_reports/reports_n/faiss_index' - n=1..9 OR 'combined/faiss_index'
-dir = 'combined/faiss_index'
+dir = 'paper_combined/faiss_index'
 
 demo_query = "What important topics are discussed in this report?"
 
@@ -19,7 +19,7 @@ def user(user_message, history):
 def respond(message, chat_history):
     question = str(message)
     chain = openai_chain(inp_dir=dir)
-    output = chain.get_response(query=question, k=20)
+    output = chain.get_response(query=question, k=3, type="stuff")
 
     splits = dir.split("/")
     pdf_dir = "data_" + splits[0] + "/data_" + splits[1]
@@ -30,7 +30,7 @@ def respond(message, chat_history):
         "response" : output
     }
     data_df = pd.DataFrame(store_data, index=[0])
-    data_df.to_csv("csvs/" + splits[1] + ".csv")
+    data_df.to_csv("paper_csvs/" + splits[1] + ".csv")
 
     bot_message = output
     chat_history.append((message, bot_message))
@@ -48,7 +48,7 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="emerald", neutral_hue="slate"))
     gr.Examples([
         ["What are the challenges and opportunities of AI in supply chain management?"],
         ["What does this report talk about?"],
-        ["Explain the key points of this report in detail."],
+        ["What does this paper talk about? Please explain in detail."],
         ["What is the impact of using AI in supply chain management?"]
 
     ], inputs=msg, label= "Click on any example to copy in the chatbox"
