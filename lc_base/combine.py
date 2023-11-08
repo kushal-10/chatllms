@@ -1,10 +1,10 @@
+# DEPRECATED - Use keypoints.py, to get combined answer
+
 import pandas as pd
 import os
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import FAISS 
-
-os.environ["OPENAI_API_KEY"] = "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"
 
 folder = 'paper_csvs'
 

@@ -8,8 +8,6 @@ import shutil
 
 import pandas as pd
 
-os.environ["OPENAI_API_KEY"] = "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"
-
 class Data():
     def __init__(self, inp_dir='reports', out_dir="output_reports") -> None:
         self.data_dir = inp_dir
@@ -19,6 +17,7 @@ class Data():
     def check_output(self):
         '''
         Create an output folder to save texts of individual PDFs
+        Remove folder if it exists and create new
         '''
         folder_path = self.out_dir
         # Check if the folder exists
@@ -60,7 +59,7 @@ class Data():
         text_count = 0
         for pdf in list_pdfs:
             dir_num += 1
-            new_dir = os.path.join(self.out_dir, self.data_dir + '_' + str(dir_num))
+            new_dir = os.path.join(self.out_dir, str(dir_num))
             os.makedirs(new_dir)
             print('Creating Database for PDF ' + str(dir_num))
             pdf_file = os.path.join(self.data_dir, pdf)
@@ -97,7 +96,8 @@ class Data():
             "index": pdf_num
         }
         df = pd.DataFrame(data_df)
-        df.to_csv("mapping.csv")
+        map_name = os.path.split(self.out_dir)[-1]
+        df.to_csv(os.path.join("outputs", "mappings", str(map_name) + ".csv"))
         print('Total text in data: ' + str(text_count))
 
         return None
