@@ -7,7 +7,7 @@ from lc_base.chain import openai_chain
 import os
 import requests
 
-dir = os.path.join("outputs", "combined", "papers_gpt4turbo_mapred5", "faiss_index")
+dir = os.path.join("outputs", "combined", "papers_4t_mapred10", "faiss_index")
 
 title = """<h1 align="center">Chat</h1>"""
 description = """<br><br><h3 align="center">This is a literature chat model, which can currently answer questions to New Data provided.</h3>"""
@@ -22,7 +22,7 @@ def user(user_message, history):
 def respond(message, chat_history):
     question = str(message)
     chain = openai_chain(inp_dir=dir)
-    output = chain.get_response(query=question, k=1, model_name="gpt-3.5-turbo", type="stuff")
+    output = chain.get_response(query=question, k=10, model_name="gpt-4-1106-preview", type="map_reduce")
 
     bot_message = output
     chat_history.append((message, bot_message))
@@ -35,9 +35,9 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="emerald", neutral_hue="slate"))
     api_key_input = gr.Textbox(lines=1, label="Enter your OpenAI API Key")
     api_key_input_submit = api_key_input.submit(save_api_key, [api_key_input])
 
-    chatbot = gr.Chatbot().style(height=750)
+    chatbot = gr.Chatbot(height=750)
     msg = gr.Textbox(label="Send a message", placeholder="Send a message",
-                             show_label=False).style(container=False)
+                             show_label=False, container=False)
 
     msg.submit(respond, [msg, chatbot], [msg, chatbot])
 
