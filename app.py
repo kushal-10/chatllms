@@ -10,7 +10,7 @@ dir = os.path.join("outputs", "combined", "policy_eu_asia", "faiss_index")
 # dir = os.path.join("outputs", "policy", "1", "faiss_index")
 
 title = """<h1 align="center">Chat</h1>"""
-description = """<br><br><h3 align="center">This is a literature chat model, which can currently answer questions to New Data provided.</h3>"""
+description = """<br><br><h3 align="center">This is a literature chat model, which can currently answer questions to AI Policies provided.</h3>"""
 
 def save_api_key(api_key):
     os.environ['OPENAI_API_KEY'] = str(api_key)

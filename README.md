@@ -1,7 +1,7 @@
 # ChatLLMs
 Gradio Interface for GPT-Powered PDF Chats
 
-This chatbot is designed to provide intelligent responses and answers to questions based on the content of PDF documents.Leverages (Gradio)[https://www.gradio.app/] as a user-friendly interface to engage with chatbots powered by (OpenAI)[https://openai.com/] models based on (langchain)[https://www.langchain.com/]. Additionally, it incorporates (ChromaDB)[https://www.trychroma.com/] for efficient data storage.
+This chatbot is designed to provide intelligent responses and answers to questions based on the content of PDF documents.Leverages [Gradio](https://www.gradio.app/) as a user-friendly interface to engage with chatbots powered by [OpenAI](https://openai.com/) models based on [langchain](https://www.langchain.com/). Additionally, it incorporates [ChromaDB](https://www.trychroma.com/) for efficient data storage.
 
 ## Getting started
 
