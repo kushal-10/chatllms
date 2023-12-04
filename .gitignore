@@ -160,3 +160,4 @@ cython_debug/
 #.idea/
 sample.txt
 temp.txt
+notex.txt

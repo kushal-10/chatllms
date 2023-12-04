@@ -45,7 +45,7 @@ class Data():
 
     def get_faiss_embeddings(self):
         '''
-        Splits all the reports, saves them in text format
+        Splits all the documents, saves them in text format
         '''
         # Get a list of all PDFs in the specified directory
         list_pdfs = os.listdir(self.data_dir)
@@ -102,5 +102,43 @@ class Data():
 
         return None
 
+    def get_combined_faiss_embedding(self):
+        '''
+        Combines all the documents, saves them in ChromaDB format
+        '''
+        # Get a list of all PDFs in the specified directory
+        list_pdfs = os.listdir(self.data_dir)
+        # Initialize OPENAI embeddings
+        embedding = OpenAIEmbeddings()
+
+        raw_text = ''
+        for pdf in list_pdfs:
+            print('Creating Database for PDF ' + str(pdf))
+            pdf_file = os.path.join(self.data_dir, pdf)
+            reader = PdfReader(pdf_file)
+
+            # Get the textual content of PDF
+            for i, page in enumerate(reader.pages):
+                text = page.extract_text()
+                if text:
+                    raw_text += text
+
+            # Split the texts 
+        text_splitter = CharacterTextSplitter(        
+            separator = "\n",
+            chunk_size = 1000,
+            chunk_overlap  = 200, 
+            length_function = len,
+        )
+        texts = text_splitter.split_text(raw_text)
+        text_count = len(raw_text)
+        print('Length of text: ' + str(len(raw_text)))
+        # Create Embedding
+        db = FAISS.from_texts(texts, embedding)
+
+        # Save Embedding
+        db.save_local(os.path.join(self.out_dir, "faiss_index"))
+
+        print('Total text in data: ' + str(text_count))
 
 
