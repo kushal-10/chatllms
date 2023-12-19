@@ -11,17 +11,18 @@ from lc_base.database import Data
 from lc_base.logs import save_log
 
 # Store all reports into input_dir and the generated DB for all reports will be saved in output_dir
-input_dir = os.path.join("inputs", "policy")
-output_dir = os.path.join("outputs", "faiss", "policy_stuff70")
-combined_dir = os.path.join("outputs", "combined", "policy_stuff70", "faiss_index")
 search_type = "stuff" #map_reduce, stuff
 model_type = "gpt-4-1106-preview" #gpt-3.5-turbo, gpt-4-1106-preview
 top_k = 70
 
+input_dir = os.path.join("inputs", "policy")
+output_dir = os.path.join("outputs", "faiss", "policy_eausa_stuff70")
+combined_dir = os.path.join("outputs", "combined", "policy__eausa_stuff70", "faiss_index")
+
 default_query = '''
 Please generate a comprehensive summary of this document.
 Ensure the summary is presented in a formal style, and if there are any contradictions or variations in the findings, 
-address them appropriately. The summary should be approximately 1/3 of your input and can be structured in paragraphs or bullet points.
+address them appropriately. The summary should be approximately 1/6 of your input capacity and can be structured in paragraphs or bullet points.
 '''
 
 data = Data(inp_dir=input_dir, out_dir=output_dir)

@@ -6,7 +6,7 @@ from lc_base.chain import openai_chain
 import os
 from lc_base.logs import save_log
 
-dir = os.path.join("outputs", "combined", "policy_eu_asia", "faiss_index")
+dir = os.path.join("outputs", "combined", "policy_eu_asia_usa", "faiss_index")
 # dir = os.path.join("outputs", "policy", "1", "faiss_index")
 
 title = """<h1 align="center">Chat</h1>"""
