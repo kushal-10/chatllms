@@ -27,43 +27,14 @@ class openai_chain():
 
         return response
 
+    def get_response_from_drive(self, query, database, k=3, type="stuff", model_name="gpt-3.5-turbo"):
+        # Get relevant docs
+        docs = database.similarity_search(query, k=k)
 
+        # Create chain
+        chain = load_qa_chain(ChatOpenAI(model=model_name), chain_type=type)
+
+        #Get Response
+        response = chain.run(input_documents=docs, question=query)
         
-"""
-TODO 
-
-1) Map_Reduce - 7 mins just to process a 27 page report
-1.5) Map_reduce on smaller reports - 
-2) Stuff - 30 secs to process and give the output
-
-Check condition? <4K use #stuff else use #Map_reduce
-
-Potential  Errors
-
-Explain the key points of this report in detail.
-
-I'm sorry, but I can't provide a detailed explanation of the key points of the report as the relevant portion of the document you provided does not contain any specific information about the report or its key points. It mainly talks about the services provided by Boston Consulting Group (BCG) and how they aim to help clients and make a positive impact in the world. If you have access to the full report, please provide more specific information or context, and I'll be happy to assist you further.
-
-Preprocess data - remove \n or blank spaces
-
-
-def remove_newlines(serie):
-    serie = serie.str.replace('\n', ' ')
-    serie = serie.str.replace('\\n', ' ')
-    serie = serie.str.replace('  ', ' ')
-    serie = serie.str.replace('  ', ' ')
-    return serie
-
-llmsherpa -> nlmatics for PDF reading into subsections
-Use GPT-4? -> check speed
-Use two modes -> summarizer wholedoc + chat top3doc
-
-compare summarizing answers by stuff and map_reduce
-
-use top6 across the paper -> 500 each
-top 40 -> 100 each
-
-Take consulting reports -> find top 10 challenges
-Take government reports from eu, china, india -> ask questions about the challenges based on countries
-Why EU is agging behind in AI? and so on..
-"""
+        return response
