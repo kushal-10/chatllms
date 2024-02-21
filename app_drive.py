@@ -34,7 +34,7 @@ def save_drive_link(drive_link):
 def create_data_from_drive():
     global db
     db = create_chroma_db()
-    return "Processing Completed"
+    return "Processing Completed - You can start the chat now!"
 
 def user(user_message, history):
     return "", history + [[user_message, None]]
@@ -47,10 +47,19 @@ def respond(message, chat_history):
     print(type(db))
     question = str(message)
     chain = openai_chain(inp_dir=dir)
-    
+    # prompt = '''You are an AI assistant equipped with advanced analytical capabilities. 
+    # You have been provided with a carefully curated set of documents relevant to a specific question. 
+    # Your task is to meticulously analyze these documents and provide a comprehensive answer to the following question. 
+    # Ensure that your response is detailed, accurate, and maintains a formal, academic tone. 
+    # The information required to answer this question is contained within the documents. 
+    # Please proceed with a thorough examination to deliver a well-informed response. Question:  '''
+
+    # query = prompt + question
+    query = question
+
     start_time = time.time()
 
-    output = chain.get_response_from_drive(query=question, database=db, k=10, model_name=model_name, type=search_type)
+    output = chain.get_response_from_drive(query=query, database=db, k=10, model_name=model_name, type=search_type)
     print(output)
 
     # Update global variables to log
@@ -89,17 +98,17 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="emerald", neutral_hue="slate"))
     global db
 
     with gr.Row():
-        with gr.Column(scale=2):
+        with gr.Column():
             api_key_input = gr.Textbox(lines=1, label="Enter your OpenAI API Key, then press Enter...")
 
-        with gr.Column(scale=2):
+        with gr.Column():
             drive_link_input = gr.Textbox(lines=1, label="Enter your shared drive link, then press Enter...")
 
-        with gr.Column(scale=1):
-            process_files_input = gr.Button(value="Process files")   
+    with gr.Row():
+        process_files_input = gr.Button(value="Process files")   
 
     with gr.Row():
-        status_message = gr.Text()
+        status_message = gr.Text(label="Status", value="Click - Process Files")
     
     api_key_input.submit(save_api_key, [api_key_input])
     drive_link_input.submit(fn=save_drive_link, inputs=[drive_link_input])
@@ -121,10 +130,10 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="emerald", neutral_hue="slate"))
 
         with gr.Column():
             feedback_radio = gr.Radio(
-                choices=["Yes", "No", "🤔"],
+                choices=["1", "2", "3", "4", "5", "6", "🤔"],
                 value=["🤔"],
-                label="Did you like the latest response?",
-                info="Selecting Yes/No will send the following diagnostic data - Question, Response, Time Taken",
+                label="How would you rate the current response?",
+                info="Choosing a number sends the following diagnostic data to the developer - Question, Response, Time Taken. Let it be 🤔 to not send any data.",
             )
 
 
