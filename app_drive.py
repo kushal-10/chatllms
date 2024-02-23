@@ -12,7 +12,8 @@ from driveapi.drive_database import create_chroma_db
 # global time_diff, model_name, search_type
 time_diff = 0
 # model_name="gpt-3.5-turbo-1106"
-model_name = "gpt-4-1106-preview"
+# model_name = "gpt-4-1106-preview"
+model_name = "gpt-4-0125-preview"
 search_type = "stuff"
 input_question = ""
 model_response = ""
@@ -78,19 +79,33 @@ def save_feedback(feedback):
     user_feedback = feedback
 
     curr_date = datetime.datetime.now()
-    file_name = f"chat_{curr_date.day}_{curr_date.month}_{curr_date.hour}_{curr_date.minute}.csv"
+    file_name = f"chat_{curr_date.day}_{curr_date.month}_{curr_date.hour}_{curr_date.minute}_{curr_date.second}.csv"
     log_data = [
         ["Question", "Response", "Model", "Time", "Feedback"],
         [input_question, model_response, model_name, time_diff, user_feedback]
     ]
-
-    if user_feedback == "Yes" or  feedback == "No":
+    
+    if user_feedback[0] != "None":
         upload_chat_to_drive(log_data, file_name)
 
 def default_feedback():
-    return "🤔"
+    return "None"
 
-first_message = True
+def default_text():
+    return ""
+
+def text_feedback(feedback):
+    global text_feedback
+    text_feedback = feedback
+
+    curr_date = datetime.datetime.now()
+    file_name = f"chat_{curr_date.day}_{curr_date.month}_{curr_date.hour}_{curr_date.minute}_{curr_date.second}.csv"
+    log_data = [
+        ["Question", "Response", "Model", "Time", "Feedback"],
+        [input_question, model_response, model_name, time_diff, text_feedback]
+    ]
+
+    upload_chat_to_drive(log_data, file_name)
 
 with gr.Blocks(theme=gr.themes.Soft(primary_hue="emerald", neutral_hue="slate")) as chat:
     gr.HTML(title)
@@ -109,6 +124,8 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="emerald", neutral_hue="slate"))
 
     with gr.Row():
         status_message = gr.Text(label="Status", value="Click - Process Files")
+
+    
     
     api_key_input.submit(save_api_key, [api_key_input])
     drive_link_input.submit(fn=save_drive_link, inputs=[drive_link_input])
@@ -124,26 +141,36 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="emerald", neutral_hue="slate"))
             gr.Examples([
                 ["Explain these documents to me in simpler terms."],
                 ["What does these documents talk about?"],
-
+                ["Give the key topics covered in these documents in less than 10 words."],
+                ["What are the key findings in these documents?"],
             ], inputs=msg, label= "Click on any example to copy in the chatbox"
             )
 
+    with gr.Row():
         with gr.Column():
             feedback_radio = gr.Radio(
-                choices=["1", "2", "3", "4", "5", "6", "🤔"],
-                value=["🤔"],
+                choices=["1", "2", "3", "4", "5", "6", "None"],
+                value=["None"],
                 label="How would you rate the current response?",
-                info="Choosing a number sends the following diagnostic data to the developer - Question, Response, Time Taken. Let it be 🤔 to not send any data.",
+                info="Choosing a number sends the following diagnostic data to the developer - Question, Response, Time Taken. Let it be [None] to not send any data.",
             )
+        
+        with gr.Column():
+            feedback_text = gr.Textbox(lines=1, label="Additional comments on the current response...")
 
 
     msg.submit(respond, [msg, chatbot], [msg, chatbot])
     msg.submit(default_feedback, outputs=[feedback_radio])
-    
+    msg.submit(default_text, outputs=[feedback_text])
 
     feedback_radio.change(
         fn=save_feedback,
         inputs=[feedback_radio]
+    )
+
+    feedback_text.submit(
+        fn=text_feedback,
+        inputs=[feedback_text]
     )
 
     gr.HTML(description)
