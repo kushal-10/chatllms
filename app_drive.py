@@ -23,13 +23,10 @@ dir = ""
 title = """<h1 align="center">ResearchBuddy</h1>"""
 description = """<br><br><h3 align="center">This is a GPT based Research Buddy to assist in navigating new research topics.</h3>"""
 
-def save_api_key(api_key):
-    os.environ['OPENAI_API_KEY'] = str(api_key)
-    return f"API Key saved in the environment: {api_key}"
 
 def save_drive_link(drive_link):
+    drive_link += "?usp=sharing"
     os.environ['DRIVE_LINK'] = str(drive_link)
-    print(f"API Key saved in the environment: {drive_link}")
     return None
 
 def create_data_from_drive():
@@ -62,6 +59,7 @@ def respond(message, chat_history):
 
     output = chain.get_response_from_drive(query=query, database=db, k=10, model_name=model_name, type=search_type)
     print(output)
+    
 
     # Update global variables to log
     time_diff = time.time() - start_time
@@ -69,6 +67,7 @@ def respond(message, chat_history):
     input_question = question
     
     bot_message = output
+    # save_feedback("No Feedback")
     chat_history.append((message, bot_message))
 
     time.sleep(2)
@@ -85,7 +84,7 @@ def save_feedback(feedback):
         [input_question, model_response, model_name, time_diff, user_feedback]
     ]
     
-    if user_feedback[0] != "None":
+    if model_response:
         upload_chat_to_drive(log_data, file_name)
 
 def default_feedback():
@@ -112,12 +111,8 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="emerald", neutral_hue="slate"))
 
     global db
 
-    with gr.Row():
-        with gr.Column():
-            api_key_input = gr.Textbox(lines=1, label="Enter your OpenAI API Key, then press Enter...")
-
-        with gr.Column():
-            drive_link_input = gr.Textbox(lines=1, label="Enter your shared drive link, then press Enter...")
+    with gr.Column():
+        drive_link_input = gr.Textbox(lines=1, label="Enter your shared drive link, then press Enter...")
 
     with gr.Row():
         process_files_input = gr.Button(value="Process files")   
@@ -125,9 +120,7 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="emerald", neutral_hue="slate"))
     with gr.Row():
         status_message = gr.Text(label="Status", value="Click - Process Files")
 
-    
-    
-    api_key_input.submit(save_api_key, [api_key_input])
+
     drive_link_input.submit(fn=save_drive_link, inputs=[drive_link_input])
     drive_link_check = os.environ.get("DRIVE_LINK")
     process_files_input.click(fn=create_data_from_drive, outputs=status_message)
@@ -151,9 +144,8 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="emerald", neutral_hue="slate"))
             feedback_radio = gr.Radio(
                 choices=["1", "2", "3", "4", "5", "6", "None"],
                 value=["None"],
-                label="How would you rate the current response?",
-                info="Choosing a number sends the following diagnostic data to the developer - Question, Response, Time Taken. Let it be [None] to not send any data.",
-            )
+                label="On a scale from 1 (very unsatisfied) to 6 (very satisfied), how would you rate the current response?",
+                )
         
         with gr.Column():
             feedback_text = gr.Textbox(lines=1, label="Additional comments on the current response...")
@@ -162,7 +154,7 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="emerald", neutral_hue="slate"))
     msg.submit(respond, [msg, chatbot], [msg, chatbot])
     msg.submit(default_feedback, outputs=[feedback_radio])
     msg.submit(default_text, outputs=[feedback_text])
-
+    chatbot.change(save_feedback, inputs=[feedback_radio])
     feedback_radio.change(
         fn=save_feedback,
         inputs=[feedback_radio]
