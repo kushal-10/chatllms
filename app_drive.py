@@ -6,14 +6,15 @@ import datetime
 import os
 
 from lc_base.chain import openai_chain
+from lc_base.dnd_database import create_dnd_database
 from driveapi.drive import upload_chat_to_drive
 from driveapi.drive_database import create_chroma_db
 
 # global time_diff, model_name, search_type
 time_diff = 0
-# model_name="gpt-3.5-turbo-1106"
+model_name="gpt-3.5-turbo-1106" # FOR TESTING
 # model_name = "gpt-4-1106-preview"
-model_name = "gpt-4-0125-preview"
+# model_name = "gpt-4-0125-preview"
 search_type = "stuff"
 input_question = ""
 model_response = ""
@@ -27,11 +28,22 @@ description = """<br><br><h3 align="center">This is a GPT based Research Buddy t
 def save_drive_link(drive_link):
     drive_link += "?usp=sharing"
     os.environ['DRIVE_LINK'] = str(drive_link)
+    print("Drive link saved in the environment")
     return None
 
-def create_data_from_drive():
+def create_data_from_drive(drive_link):
     global db
+
+    drive_link += "?usp=sharing"
+    os.environ['DRIVE_LINK'] = str(drive_link)
+    print("Drive link saved in the environment! Creating Database...")
+
     db = create_chroma_db()
+    return "Processing Completed - You can start the chat now!"
+
+def check_pdfs(pdf_files):
+    global db
+    db = create_dnd_database(pdf_files)
     return "Processing Completed - You can start the chat now!"
 
 def user(user_message, history):
@@ -45,14 +57,7 @@ def respond(message, chat_history):
     print(type(db))
     question = str(message)
     chain = openai_chain(inp_dir=dir)
-    # prompt = '''You are an AI assistant equipped with advanced analytical capabilities. 
-    # You have been provided with a carefully curated set of documents relevant to a specific question. 
-    # Your task is to meticulously analyze these documents and provide a comprehensive answer to the following question. 
-    # Ensure that your response is detailed, accurate, and maintains a formal, academic tone. 
-    # The information required to answer this question is contained within the documents. 
-    # Please proceed with a thorough examination to deliver a well-informed response. Question:  '''
 
-    # query = prompt + question
     query = question
 
     start_time = time.time()
@@ -67,11 +72,10 @@ def respond(message, chat_history):
     input_question = question
     
     bot_message = output
-    # save_feedback("No Feedback")
     chat_history.append((message, bot_message))
 
     time.sleep(2)
-    return " ", chat_history
+    return " ", chat_history 
 
 def save_feedback(feedback):
     global user_feedback
@@ -84,8 +88,9 @@ def save_feedback(feedback):
         [input_question, model_response, model_name, time_diff, user_feedback]
     ]
     
-    if model_response:
+    if model_response and user_feedback[0] != "None":
         upload_chat_to_drive(log_data, file_name)
+
 
 def default_feedback():
     return "None"
@@ -111,19 +116,24 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="emerald", neutral_hue="slate"))
 
     global db
 
-    with gr.Column():
-        drive_link_input = gr.Textbox(lines=1, label="Enter your shared drive link, then press Enter...")
-
-    with gr.Row():
-        process_files_input = gr.Button(value="Process files")   
-
-    with gr.Row():
-        status_message = gr.Text(label="Status", value="Click - Process Files")
+    with gr.Row(equal_height=True):
+        with gr.Column():
+            with gr.Row():
+                pdf_files_dnd = gr.File(file_count='multiple', height=250, label="Upload PDF Files")
 
 
-    drive_link_input.submit(fn=save_drive_link, inputs=[drive_link_input])
-    drive_link_check = os.environ.get("DRIVE_LINK")
-    process_files_input.click(fn=create_data_from_drive, outputs=status_message)
+        with gr.Column():
+           with gr.Row():
+                drive_link_input = gr.Textbox(lines=1, label="Enter your shared drive link, then press Enter...")
+           with gr.Row():
+                status_message = gr.Text(label="Status", value="⬆️Submit a (shared) drive link containing only PDFs \n-or- \n⬅️Upload PDF files", text_align='center')
+            
+
+        
+        
+
+    drive_link_input.submit(fn=create_data_from_drive, inputs=[drive_link_input], outputs=[status_message])
+    pdf_files_dnd.change(fn=check_pdfs, inputs=[pdf_files_dnd], outputs=[status_message])
 
     chatbot = gr.Chatbot(height=750)
     msg = gr.Textbox(label="Send a message", placeholder="Send a message",
@@ -153,8 +163,8 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="emerald", neutral_hue="slate"))
 
     msg.submit(respond, [msg, chatbot], [msg, chatbot])
     msg.submit(default_feedback, outputs=[feedback_radio])
-    msg.submit(default_text, outputs=[feedback_text])
     chatbot.change(save_feedback, inputs=[feedback_radio])
+
     feedback_radio.change(
         fn=save_feedback,
         inputs=[feedback_radio]
@@ -163,6 +173,11 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="emerald", neutral_hue="slate"))
     feedback_text.submit(
         fn=text_feedback,
         inputs=[feedback_text]
+    )
+
+    feedback_text.submit(
+        fn=default_text,
+        outputs=[feedback_text]
     )
 
     gr.HTML(description)

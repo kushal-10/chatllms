@@ -1,21 +1,14 @@
-# Change this in gradio
-import os
-from driveapi.drive import drive_content
-from driveapi.service import get_shared_folder_id
+from driveapi.drive import process_pdf
 
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import FAISS 
 
-# drive_shared_link = os.environ.get('DRIVE_LINK')
-# shared_folder_id = get_shared_folder_id(drive_shared_link)
+def create_dnd_database(file_list):
+    raw_text = ''
+    for pdf in file_list:
+        raw_text += process_pdf(pdf)
 
-def create_chroma_db():
-    drive_shared_link = os.environ.get('DRIVE_LINK')
-    if drive_shared_link == None:
-        return ""
-    shared_folder_id = get_shared_folder_id(drive_shared_link)
-    raw_text = drive_content(shared_folder_id)
     embedding = OpenAIEmbeddings()
 
     text_splitter = CharacterTextSplitter(        
@@ -27,5 +20,5 @@ def create_chroma_db():
     texts = text_splitter.split_text(raw_text)
     print('Length of text: ' + str(len(raw_text)))
     db = FAISS.from_texts(texts, embedding)
-
+    
     return db
