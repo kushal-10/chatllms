@@ -50,7 +50,8 @@ def download_file(file_id):
 
 # Function to process a PDF file
 def process_pdf(file_stream):
-    pdf_reader = PyPDF2.PdfReader(file_stream)
+    file_path = file_stream['name'] # Use 'path' for local testing and 'name' for Gradio
+    pdf_reader = PyPDF2.PdfReader(file_path)
     text = ""
     for page_num in range(len(pdf_reader.pages)):
         page = pdf_reader.pages[page_num]

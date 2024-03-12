@@ -12,9 +12,9 @@ from driveapi.drive_database import create_chroma_db
 
 # global time_diff, model_name, search_type
 time_diff = 0
-model_name="gpt-3.5-turbo-1106" # FOR TESTING
-# model_name = "gpt-4-1106-preview"
-# model_name = "gpt-4-0125-preview"
+# model_name="gpt-3.5-turbo-1106" # FOR TESTING
+# model_name = "gpt-4-1106-preview"https://huggingface.co/spaces/Koshti10/Chat_literature/edit/main/app_drive.py
+model_name = "gpt-4-0125-preview"
 search_type = "stuff"
 input_question = ""
 model_response = ""
@@ -133,7 +133,7 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="emerald", neutral_hue="slate"))
         
 
     drive_link_input.submit(fn=create_data_from_drive, inputs=[drive_link_input], outputs=[status_message])
-    pdf_files_dnd.change(fn=check_pdfs, inputs=[pdf_files_dnd], outputs=[status_message])
+    pdf_files_dnd.change(fn=check_pdfs, inputs=[pdf_files_dnd], outputs=[status_message], preprocess=False, postprocess=False)
 
     chatbot = gr.Chatbot(height=750)
     msg = gr.Textbox(label="Send a message", placeholder="Send a message",
