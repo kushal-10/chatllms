@@ -10,11 +10,12 @@ from lc_base.dnd_database import create_dnd_database
 from driveapi.drive import upload_chat_to_drive
 from driveapi.drive_database import create_chroma_db
 
-# global time_diff, model_name, search_type
+############################# Global Params #############################
+
 time_diff = 0
-# model_name="gpt-3.5-turbo-1106" # FOR TESTING
-# model_name = "gpt-4-1106-preview"https://huggingface.co/spaces/Koshti10/Chat_literature/edit/main/app_drive.py
-model_name = "gpt-4-0125-preview"
+model_name="gpt-3.5-turbo-1106" # FOR TESTING
+# model_name = "gpt-4-1106-preview"
+# model_name = "gpt-4-0125-preview"
 search_type = "stuff"
 input_question = ""
 model_response = ""
@@ -24,13 +25,7 @@ dir = ""
 title = """<h1 align="center">ResearchBuddy</h1>"""
 description = """<br><br><h3 align="center">This is a GPT based Research Buddy to assist in navigating new research topics.</h3>"""
 
-
-def save_drive_link(drive_link):
-    drive_link += "?usp=sharing"
-    os.environ['DRIVE_LINK'] = str(drive_link)
-    print("Drive link saved in the environment")
-    return None
-
+############################# Drive API specific function #############################
 def create_data_from_drive(drive_link):
     global db
 
@@ -41,11 +36,13 @@ def create_data_from_drive(drive_link):
     db = create_chroma_db()
     return "Processing Completed - You can start the chat now!"
 
+############################# Drag and Drop PDF processing #############################
 def check_pdfs(pdf_files):
     global db
     db = create_dnd_database(pdf_files)
     return "Processing Completed - You can start the chat now!"
 
+############################# Chatbot Specific functions #############################
 def user(user_message, history):
     return "", history + [[user_message, None]]
 
@@ -53,29 +50,27 @@ def respond(message, chat_history):
 
     global time_diff, model_response, input_question
 
-    print("Database is ...................")
-    print(type(db))
     question = str(message)
     chain = openai_chain(inp_dir=dir)
 
     query = question
-
     start_time = time.time()
 
     output = chain.get_response_from_drive(query=query, database=db, k=10, model_name=model_name, type=search_type)
-    print(output)
     
-
-    # Update global variables to log
+    # Update global variables for logging
     time_diff = time.time() - start_time
     model_response = output
     input_question = question
-    
+    save_text_feedback(feedback="Default Conversation Save!!!") # Upload chatlog to drive after every response irrespective of feedback
+     
     bot_message = output
     chat_history.append((message, bot_message))
 
-    time.sleep(2)
+    time.sleep(1) # Pause for a second to avoid overloading
     return " ", chat_history 
+
+############################# Feedback Specific functions #############################
 
 def save_feedback(feedback):
     global user_feedback
@@ -98,7 +93,7 @@ def default_feedback():
 def default_text():
     return ""
 
-def text_feedback(feedback):
+def save_text_feedback(feedback):
     global text_feedback
     text_feedback = feedback
 
@@ -111,16 +106,18 @@ def text_feedback(feedback):
 
     upload_chat_to_drive(log_data, file_name)
 
+
+############################# Gradio Application Block #############################
 with gr.Blocks(theme=gr.themes.Soft(primary_hue="emerald", neutral_hue="slate")) as chat:
     gr.HTML(title)
 
     global db
 
+    # PDF Drag and Drop + Drive link Input + Status containers
     with gr.Row(equal_height=True):
         with gr.Column():
             with gr.Row():
                 pdf_files_dnd = gr.File(file_count='multiple', height=250, label="Upload PDF Files")
-
 
         with gr.Column():
            with gr.Row():
@@ -129,16 +126,25 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="emerald", neutral_hue="slate"))
                 status_message = gr.Text(label="Status", value="⬆️Submit a (shared) drive link containing only PDFs \n-or- \n⬅️Upload PDF files", text_align='center')
             
 
-        
-        
+    # What happens when PDF is uploaded or a drive link is submitted
+    drive_link_input.submit(
+        fn = create_data_from_drive, 
+        inputs = [drive_link_input], 
+        outputs = [status_message])
+    
+    pdf_files_dnd.change(
+        fn=check_pdfs, 
+        inputs=[pdf_files_dnd], 
+        outputs=[status_message], 
+        preprocess=False, 
+        postprocess=False) # Set preprocess and postprocess to False, to avoid the tmpfile object creation, instead get a Dict
 
-    drive_link_input.submit(fn=create_data_from_drive, inputs=[drive_link_input], outputs=[status_message])
-    pdf_files_dnd.change(fn=check_pdfs, inputs=[pdf_files_dnd], outputs=[status_message], preprocess=False, postprocess=False)
-
+    # Chatbot container
     chatbot = gr.Chatbot(height=750)
     msg = gr.Textbox(label="Send a message", placeholder="Send a message",
                              show_label=False, container=False)  
 
+    # Sample questions
     with gr.Row():
         with gr.Column():
             gr.Examples([
@@ -149,6 +155,7 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="emerald", neutral_hue="slate"))
             ], inputs=msg, label= "Click on any example to copy in the chatbox"
             )
 
+    # Feedback options container
     with gr.Row():
         with gr.Column():
             feedback_radio = gr.Radio(
@@ -161,27 +168,43 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="emerald", neutral_hue="slate"))
             feedback_text = gr.Textbox(lines=1, label="Additional comments on the current response...")
 
 
-    msg.submit(respond, [msg, chatbot], [msg, chatbot])
-    msg.submit(default_feedback, outputs=[feedback_radio])
-    chatbot.change(save_feedback, inputs=[feedback_radio])
+    # Get a response when a message is submitted to the chatbot
+    msg.submit(
+        fn = respond, 
+        inputs = [msg, chatbot], 
+        outputs = [msg, chatbot],
+        queue = True)
+    
 
+    # Set default feedback to None after a message is submitted
+    msg.submit(
+        fn = default_feedback, 
+        outputs=[feedback_radio],
+        queue = True
+        )
+    
+    # Change whenever some feedback is given (Numeric or Text)
     feedback_radio.change(
         fn=save_feedback,
         inputs=[feedback_radio]
     )
 
     feedback_text.submit(
-        fn=text_feedback,
-        inputs=[feedback_text]
+        fn=save_text_feedback,
+        inputs=[feedback_text],
+        queue=True
     )
 
+    # Clear the text feedback after it is submitted
     feedback_text.submit(
         fn=default_text,
-        outputs=[feedback_text]
+        outputs=[feedback_text],
+        queue=True
     )
 
+    # Description at the bottom of the application
     gr.HTML(description)
 
-
+# Enable queing
 chat.queue()
 chat.launch()
