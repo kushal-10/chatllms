@@ -13,9 +13,9 @@ from driveapi.drive_database import create_chroma_db
 ############################# Global Params #############################
 
 time_diff = 0
-model_name="gpt-3.5-turbo-1106" # FOR TESTING
+# model_name="gpt-3.5-turbo-1106" # FOR TESTING
 # model_name = "gpt-4-1106-preview"
-# model_name = "gpt-4-0125-preview"
+model_name = "gpt-4-0125-preview"
 search_type = "stuff"
 input_question = ""
 model_response = ""
@@ -40,7 +40,10 @@ def create_data_from_drive(drive_link):
 def check_pdfs(pdf_files):
     global db
     db = create_dnd_database(pdf_files)
-    return "Processing Completed - You can start the chat now!"
+    if not db:
+        return "There was a discrepancy. Please upload a PDF file again or submit a drive link containing only PDFs."
+    else:
+        return "Processing Completed - You can start the chat now!"
 
 ############################# Chatbot Specific functions #############################
 def user(user_message, history):

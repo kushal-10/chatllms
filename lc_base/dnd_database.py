@@ -6,6 +6,8 @@ from langchain.vectorstores import FAISS
 
 def create_dnd_database(file_list):
     raw_text = ''
+    if file_list is None:
+        return None
     for pdf in file_list:
         raw_text += process_pdf(pdf)
 
