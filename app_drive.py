@@ -25,6 +25,9 @@ dir = ""
 title = """<h1 align="center">ResearchBuddy</h1>"""
 description = """<br><br><h3 align="center">This is a GPT based Research Buddy to assist in navigating new research topics.</h3>"""
 
+DEFAULT_STATUS = "⬆️Submit a (shared) drive link containing only PDFs \n-or- \n⬅️Upload PDF files"
+DEFAULT_TEXT_FEEDBACK = ""
+DEFAULT_NUM_FEEDBACK = "None"
 ############################# Drive API specific function #############################
 def create_data_from_drive(drive_link):
     global db
@@ -41,7 +44,7 @@ def check_pdfs(pdf_files):
     global db
     db = create_dnd_database(pdf_files)
     if not db:
-        return "There was a discrepancy. Please upload a PDF file again or submit a drive link containing only PDFs."
+        return "Please upload a PDF file again or submit a drive link containing only PDFs."
     else:
         return "Processing Completed - You can start the chat now!"
 
@@ -126,7 +129,7 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="emerald", neutral_hue="slate"))
            with gr.Row():
                 drive_link_input = gr.Textbox(lines=1, label="Enter your shared drive link, then press Enter...")
            with gr.Row():
-                status_message = gr.Text(label="Status", value="⬆️Submit a (shared) drive link containing only PDFs \n-or- \n⬅️Upload PDF files", text_align='center')
+                status_message = gr.Text(label="Status", value=DEFAULT_STATUS, text_align='center')
             
 
     # What happens when PDF is uploaded or a drive link is submitted
@@ -146,6 +149,13 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="emerald", neutral_hue="slate"))
     chatbot = gr.Chatbot(height=750)
     msg = gr.Textbox(label="Send a message", placeholder="Send a message",
                              show_label=False, container=False)  
+    
+    with gr.Row():
+        with gr.Column():
+            clear_history_button = gr.ClearButton(value="Clear Chat History")
+
+        with gr.Column():
+            new_chat_button = gr.ClearButton(value="New Chat")
 
     # Sample questions
     with gr.Row():
@@ -204,6 +214,12 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="emerald", neutral_hue="slate"))
         outputs=[feedback_text],
         queue=True
     )
+
+    # Clear the chat history/ New chat
+    clear_history_button.click(lambda: [None, None], outputs=[msg, chatbot])
+    new_chat_button.click(
+        lambda: [None, None, None, None, DEFAULT_STATUS, DEFAULT_NUM_FEEDBACK, DEFAULT_TEXT_FEEDBACK], 
+        outputs=[msg, chatbot, pdf_files_dnd, drive_link_input, status_message, feedback_radio, feedback_text])
 
     # Description at the bottom of the application
     gr.HTML(description)
